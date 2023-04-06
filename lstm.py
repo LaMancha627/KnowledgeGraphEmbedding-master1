@@ -62,7 +62,7 @@ def get_degree(triples, degree=0):
             a[i[0]] += 1
             a[i[2]] += 1
     sorted_dict = sorted(degree_dict.items(), key=lambda kv: kv[1])
-    print(sorted_dict)
+    #print(sorted_dict)
     nentity = len(entity2id)
     nrelation = len(relation2id)
     return degree
@@ -80,11 +80,11 @@ def get_network(triples):
     degree = nx.degree_histogram(G)
     remove = [node for node, degree in dict(G.degree).items() if degree < 30]
     G.remove_nodes_from(remove)
-    print(type(remove))
+    #print(type(remove))
     degrees = [(node, val) for (node, val) in G.degree]
     sorted_degree = sorted(degrees, key=lambda x: x[1], reverse=True)
     # print(type(sorted_degree)) list
-    print("排序后：" + str(sorted_degree))
+    #print("排序后：" + str(sorted_degree))
     # 选择前三分之一的元素
     index1 = int(len(sorted_degree) / 3)
     index2 = int(2 * len(sorted_degree) / 3)
@@ -304,27 +304,28 @@ with torch.no_grad():
     for paths in dataloader:
         vectors = model(paths)
         output = model1(vectors)
-        path_embeds_norm = F.normalize(output, p=3, dim=1)
-        #print(path_embeds_norm.size())
-        #path1 = torch.cat([path1, path_embeds_norm], dim=1).
+        path_embeds_norm = F.normalize(output, p=2, dim=1)
+        # print(path_embeds_norm.size())
+        # path1 = torch.cat([path1, path_embeds_norm], dim=1).
         path1.append(path_embeds_norm)
         # print(output)
+
     '''
-    wn18前1/3
-    print(path1[1860].size())
-    #path1[1860] = torch.nn.functional.pad(path1[1860], (0, 2), 'constant', 0)
-    #path1[1860] = torch.nn.functional.pad(path1[1860], (1, 2), 'constant', 0)
-    y = torch.zeros(32, 32)  # 创建一个形状为 [32, 32] 的空张量
-    # 将 x 复制到 y 的左上角
-    y[:30, :30] = path1[1860]
-    # 现在 y 的形状是 [32, 32]，但是最后两行和最后两列都是空的，需要裁剪掉
-    #y = y[:30, :30]
-    print(y.shape)  # 输出 torch.Size([32, 32])
-    #print(path1[1860].size())
-    path1[1860] = y
-    print(path1[1860].size())
-    '''
-    print(path1[1413].size())
+        wn18前1/3
+        print(path1[1860].size())
+        #path1[1860] = torch.nn.functional.pad(path1[1860], (0, 2), 'constant', 0)
+        #path1[1860] = torch.nn.functional.pad(path1[1860], (1, 2), 'constant', 0)
+        y = torch.zeros(32, 32)  # 创建一个形状为 [32, 32] 的空张量
+        # 将 x 复制到 y 的左上角
+        y[:30, :30] = path1[1860]
+        # 现在 y 的形状是 [32, 32]，但是最后两行和最后两列都是空的，需要裁剪掉
+        #y = y[:30, :30]
+        print(y.shape)  # 输出 torch.Size([32, 32])
+        #print(path1[1860].size())
+        path1[1860] = y
+        print(path1[1860].size())
+        '''
+    #print(path1[1413].size())
     # path1[1860] = torch.nn.functional.pad(path1[1860], (0, 2), 'constant', 0)
     # path1[1860] = torch.nn.functional.pad(path1[1860], (1, 2), 'constant', 0)
     y = torch.zeros(32, 32)  # 创建一个形状为 [32, 32] 的空张量
@@ -332,10 +333,10 @@ with torch.no_grad():
     y[:path1[1413].size()[0], :path1[1413].size()[1]] = path1[1413]
     # 现在 y 的形状是 [32, 32]，但是最后两行和最后两列都是空的，需要裁剪掉
     # y = y[:30, :30]
-    print(y.shape)  # 输出 torch.Size([32, 32])
+    #print(y.shape)  # 输出 torch.Size([32, 32])
     # print(path1[1860].size())
     path1[1413] = y
-    print(path1[1413].size())
+    #print(path1[1413].size())
     '''unified_shape = [32, 32]
 
     # 找出形状不同的张量，并统一形状
@@ -345,10 +346,10 @@ with torch.no_grad():
             # 修改形状不一致的张量
             tensor = tensor.view(unified_shape)'''
 
-    #concatenated_tensor = torch.cat([x.unsqueeze(1) for x in path1], dim=1)
     concatenated_tensor = torch.cat([x for x in path1], dim=1)
-    #concatenated_tensor = concatenated_tensor.squeeze(dim=1)
-    print(concatenated_tensor)
-    print(concatenated_tensor.size())
+
+torch.save(concatenated_tensor, 'path_tensor.pt')
+    #print(concatenated_tensor)
+    #print(concatenated_tensor.size())
 # 输出编码后的路径信息表示
 # print(output)

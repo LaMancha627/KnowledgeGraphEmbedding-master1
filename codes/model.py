@@ -16,8 +16,10 @@ from sklearn.metrics import average_precision_score
 
 from torch.utils.data import DataLoader
 
-import lstm
+#import lstm
 from dataloader import TestDataset
+
+concatenated_tensor = torch.load('path_tensor.pt')
 
 
 class KGEModel(nn.Module):
@@ -47,9 +49,9 @@ class KGEModel(nn.Module):
         # self.relation_embedding = torch.cat([self.relation_embedding, lstm.path1], dim=1)
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
         print(self.entity_embedding.size())
-        a = max(self.entity_dim, lstm.concatenated_tensor.size()[1])
+        a = max(self.entity_dim, concatenated_tensor.size()[1])
         m = torch.zeros(nentity, a)
-        m[:lstm.concatenated_tensor.size()[0], :lstm.concatenated_tensor.size()[1]] = lstm.concatenated_tensor
+        m[:concatenated_tensor.size()[0], :concatenated_tensor.size()[1]] = concatenated_tensor
         self.entity_embedding = nn.Parameter(torch.cat([self.entity_embedding.data, m], dim=1))
         print(self.entity_embedding)
         #self.entity_embedding = nn.Parameter(torch.cat([self.entity_embedding.data, lstm.concatenated_tensor], dim=1))
@@ -62,16 +64,16 @@ class KGEModel(nn.Module):
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
         print(self.relation_embedding.size())
 
-        a = max(nrelation, lstm.concatenated_tensor.size()[0])
-        b = max(self.relation_dim, lstm.concatenated_tensor.size()[1])
+        a = max(nrelation, concatenated_tensor.size()[0])
+        b = max(self.relation_dim, concatenated_tensor.size()[1])
         print(a)
         print(b)
         #n = torch.zeros(lstm.concatenated_tensor.size()[0], self.relation_dim)
         n = torch.zeros(a, b)
         n[:nrelation, :self.relation_dim] = self.relation_embedding
         print(n.size())
-        self.relation_embedding = nn.Parameter(torch.cat([n, lstm.concatenated_tensor], dim=1))
-        self.relation_embedding = nn.Parameter(torch.cat([self.relation_embedding.data, lstm.concatenated_tensor], dim=1))
+        self.relation_embedding = nn.Parameter(torch.cat([n, concatenated_tensor], dim=1))
+        self.relation_embedding = nn.Parameter(torch.cat([self.relation_embedding.data, concatenated_tensor], dim=1))
         nn.init.uniform_(
             tensor=self.relation_embedding,
             a=-self.embedding_range.item(),
@@ -122,9 +124,6 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=sample[:, 2]
             ).unsqueeze(1)
-            print(head.size())
-            print(relation.size())
-            print(tail.size())
 
         elif mode == 'head-batch':
             tail_part, head_part = sample
@@ -147,9 +146,6 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=tail_part[:, 2]
             ).unsqueeze(1)
-            print(head.size())
-            print(relation.size())
-            print(tail.size())
 
         elif mode == 'tail-batch':
             head_part, tail_part = sample
@@ -172,9 +168,6 @@ class KGEModel(nn.Module):
                 dim=0,
                 index=tail_part.view(-1)
             ).view(batch_size, negative_sample_size, -1)
-            print(head.size())
-            print(relation.size())
-            print(tail.size())
 
         else:
             raise ValueError('mode %s not supported' % mode)

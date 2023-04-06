@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 import torch.nn.functional as F
 
 print(os.getcwd())
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 with open('data/wn18/entities.dict') as fin:
     entity2id = dict()
@@ -78,13 +79,15 @@ def get_network(triples):
     # print("所有节点的度分布序列:", nx.degree_histogram(G))  # 返回图中所有节点的度分布序列（从1至最大度的出现次数）
     # 无向图度分布曲线
     degree = nx.degree_histogram(G)
+    '''
     remove = [node for node, degree in dict(G.degree).items() if degree < 30]
     G.remove_nodes_from(remove)
     print(type(remove))
+    '''
     degrees = [(node, val) for (node, val) in G.degree]
     sorted_degree = sorted(degrees, key=lambda x: x[1], reverse=True)
     # print(type(sorted_degree)) list
-    print("排序后：" + str(sorted_degree))
+    #print("排序后：" + str(sorted_degree))
     # 选择前三分之一的元素
     index1 = int(len(sorted_degree) / 3)
     index2 = int(2 * len(sorted_degree) / 3)
