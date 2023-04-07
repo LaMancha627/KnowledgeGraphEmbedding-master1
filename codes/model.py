@@ -235,6 +235,20 @@ class KGEModel(nn.Module):
         re_relation = torch.cos(phase_relation)
         im_relation = torch.sin(phase_relation)
 
+        x = max(phase_relation.size(2), re_tail.size(2))
+        a = torch.zeros(re_head.size()[0], re_head.size()[1], x)
+        b = torch.zeros(re_tail.size()[0], re_tail.size()[1], x)
+        c = torch.zeros(im_head.size()[0], im_head.size()[1], x)
+        d = torch.zeros(im_tail.size()[0], im_tail.size()[1], x)
+        a[:re_head.size()[0], :re_head.size()[1], :re_head.size()[2]] = re_head
+        b[:re_tail.size()[0], :re_tail.size()[1], :re_tail.size()[2]] = re_tail
+        c[:im_head.size()[0], :im_head.size()[1], :im_head.size()[2]] = im_head
+        d[:im_tail.size()[0], :im_tail.size()[1], :im_tail.size()[2]] = im_tail
+        re_head = a
+        re_tail = b
+        im_head = c
+        im_tail = d
+
         if mode == 'head-batch':
             re_score = re_relation * re_tail + im_relation * im_tail
             im_score = re_relation * im_tail - im_relation * re_tail
