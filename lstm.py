@@ -134,7 +134,7 @@ def get_path(triples):
     q = 1
     dimensions = 8
     num_walks = 10
-    walk_length = 80
+    walk_length = 5
 
     # 使用node2vec算法生成随机游走序列
     node2vec = Node2Vec(G, dimensions=dimensions, walk_length=walk_length, num_walks=num_walks, p=p, q=q)
@@ -167,7 +167,7 @@ path_sequences = [[vocab[node] for node in path] for path in path_data]
 # 对所有序列使用填充将它们扩展到相同的长度
 max_len = max([len(seq) for seq in path_sequences])
 padded_sequences = pad_sequence([torch.LongTensor(seq) for seq in path_sequences], batch_first=True, padding_value=0)
-
+print(max_len)
 
 # 创建一个LSTM模型，它接收路径的嵌入表示并输出一个向量表示
 class PathLSTM(nn.Module):
@@ -256,7 +256,7 @@ class PathTransformer(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self, d_model, max_len=5):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=0.1)
 
@@ -288,7 +288,7 @@ input_dim = 16  # 输入向量的维度
 # hidden_dim = 512  # Transformer 编码器中每个头的维度
 hidden_dim = 8  # Transformer 编码器中每个头的维度
 num_layers = 4  # Transformer 编码器的层数
-max_len = 100  # 输入序列的最大长度
+max_len = 5  # 输入序列的最大长度
 
 # 定义模型
 model1 = PathTransformer(input_dim, hidden_dim, num_layers)
@@ -326,9 +326,10 @@ with torch.no_grad():
         print(path1[1860].size())
         '''
     #print(path1[1413].size())
+    #print(path1[1412].size())
     # path1[1860] = torch.nn.functional.pad(path1[1860], (0, 2), 'constant', 0)
     # path1[1860] = torch.nn.functional.pad(path1[1860], (1, 2), 'constant', 0)
-    y = torch.zeros(32, 32)  # 创建一个形状为 [32, 32] 的空张量
+    y = torch.zeros(5, 32)  # 创建一个形状为 [32, 32] 的空张量
     # 将 x 复制到 y 的左上角
     y[:path1[1413].size()[0], :path1[1413].size()[1]] = path1[1413]
     # 现在 y 的形状是 [32, 32]，但是最后两行和最后两列都是空的，需要裁剪掉
@@ -346,9 +347,10 @@ with torch.no_grad():
             # 修改形状不一致的张量
             tensor = tensor.view(unified_shape)'''
 
-    concatenated_tensor = torch.cat([x for x in path1], dim=1)
+    concatenated_tensor = torch.cat([x for x in path1], dim=0)
+    print(concatenated_tensor.size())
 
-torch.save(concatenated_tensor, 'path_tensor.pt')
+torch.save(concatenated_tensor, '/home/jsj201-1/mount1/wjy/path_tensor.pt')
     #print(concatenated_tensor)
     #print(concatenated_tensor.size())
 # 输出编码后的路径信息表示

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="jsj201-1@172.27.69.213:10001 password (2)" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="jsj201-1@172.27.69.213:10001 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/jsj201-1/mount1/wjy" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="jsj201-1@172.27.69.213:10001 password (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/jsj201-1/mount1/wjy" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="service">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/jsj201-1/mount1/wjy" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

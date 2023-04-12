@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-#import lstm
+# import lstm
 import numpy as np
 
 import torch
@@ -16,10 +16,12 @@ from sklearn.metrics import average_precision_score
 
 from torch.utils.data import DataLoader
 
-#import lstm
+# import lstm
 from dataloader import TestDataset
 
-concatenated_tensor = torch.load('path_tensor.pt')
+concatenated_tensor = torch.load('/home/jsj201-1/mount1/wjy/path_tensor.pt')
+print(concatenated_tensor.size())
+concatenated_tensor = concatenated_tensor.cuda()
 
 
 class KGEModel(nn.Module):
@@ -45,16 +47,16 @@ class KGEModel(nn.Module):
         self.entity_dim = hidden_dim * 2 if double_entity_embedding else hidden_dim
         self.relation_dim = hidden_dim * 2 if double_relation_embedding else hidden_dim
 
-        # self.entity_embedding= torch.cat([self.entity_embedding, lstm.path1], dim=1)
-        # self.relation_embedding = torch.cat([self.relation_embedding, lstm.path1], dim=1)
         self.entity_embedding = nn.Parameter(torch.zeros(nentity, self.entity_dim))
+        self.entity_embedding.data = self.entity_embedding.data.cuda()
         print(self.entity_embedding.size())
         a = max(self.entity_dim, concatenated_tensor.size()[1])
         m = torch.zeros(nentity, a)
         m[:concatenated_tensor.size()[0], :concatenated_tensor.size()[1]] = concatenated_tensor
+        m = m.cuda()
         self.entity_embedding = nn.Parameter(torch.cat([self.entity_embedding.data, m], dim=1))
-        print(self.entity_embedding)
-        #self.entity_embedding = nn.Parameter(torch.cat([self.entity_embedding.data, lstm.concatenated_tensor], dim=1))
+        # print(self.entity_embedding)
+        # self.entity_embedding = nn.Parameter(torch.cat([self.entity_embedding.data, lstm.concatenated_tensor], dim=1))
         nn.init.uniform_(
             tensor=self.entity_embedding,
             a=-self.embedding_range.item(),
@@ -62,18 +64,20 @@ class KGEModel(nn.Module):
         )
 
         self.relation_embedding = nn.Parameter(torch.zeros(nrelation, self.relation_dim))
-        print(self.relation_embedding.size())
-
+        # print(self.relation_embedding.size())
+        self.relation_embedding.data = self.relation_embedding.data.cuda()
+        print(self.relation_embedding.data.size())
         a = max(nrelation, concatenated_tensor.size()[0])
         b = max(self.relation_dim, concatenated_tensor.size()[1])
-        print(a)
-        print(b)
-        #n = torch.zeros(lstm.concatenated_tensor.size()[0], self.relation_dim)
+        # print(a)
+        # print(b)
+        # n = torch.zeros(lstm.concatenated_tensor.size()[0], self.relation_dim)
         n = torch.zeros(a, b)
         n[:nrelation, :self.relation_dim] = self.relation_embedding
-        print(n.size())
+        # print(n.size())
+        n = n.cuda()
         self.relation_embedding = nn.Parameter(torch.cat([n, concatenated_tensor], dim=1))
-        self.relation_embedding = nn.Parameter(torch.cat([self.relation_embedding.data, concatenated_tensor], dim=1))
+        # self.relation_embedding = nn.Parameter(torch.cat([self.relation_embedding.data, concatenated_tensor], dim=1))
         nn.init.uniform_(
             tensor=self.relation_embedding,
             a=-self.embedding_range.item(),
@@ -234,20 +238,31 @@ class KGEModel(nn.Module):
 
         re_relation = torch.cos(phase_relation)
         im_relation = torch.sin(phase_relation)
-
+        print(re_head.size())
+        print(re_tail.size())
+        print(re_relation.size())
+        print(im_relation.size())
         x = max(phase_relation.size(2), re_tail.size(2))
-        a = torch.zeros(re_head.size()[0], re_head.size()[1], x)
-        b = torch.zeros(re_tail.size()[0], re_tail.size()[1], x)
-        c = torch.zeros(im_head.size()[0], im_head.size()[1], x)
-        d = torch.zeros(im_tail.size()[0], im_tail.size()[1], x)
-        a[:re_head.size()[0], :re_head.size()[1], :re_head.size()[2]] = re_head
-        b[:re_tail.size()[0], :re_tail.size()[1], :re_tail.size()[2]] = re_tail
-        c[:im_head.size()[0], :im_head.size()[1], :im_head.size()[2]] = im_head
-        d[:im_tail.size()[0], :im_tail.size()[1], :im_tail.size()[2]] = im_tail
-        re_head = a
+        a = torch.zeros(re_relation.size()[0], re_relation.size()[1], x)
+        b = torch.zeros(im_relation.size()[0], im_relation.size()[1], x)
+        #c = torch.zeros(im_head.size()[0], im_head.size()[1], x)
+        #d = torch.zeros(im_tail.size()[0], im_tail.size()[1], x)
+        a[:re_relation.size()[0], :re_relation.size()[1], :re_relation.size()[2]] = re_relation
+        b[:im_relation.size()[0], :im_relation.size()[1], :im_relation.size()[2]] = im_relation
+        #c[:im_head.size()[0], :im_head.size()[1], :im_head.size()[2]] = im_head
+        #d[:im_tail.size()[0], :im_tail.size()[1], :im_tail.size()[2]] = im_tail
+        re_relation = a
+        im_relation = b
+        re_relation = re_relation.cuda()
+        im_relation = im_relation.cuda()
+        re_head = re_head.cuda()
+        im_head = im_head.cuda()
+        re_tail = re_tail.cuda()
+        im_tail = im_tail.cuda()
+        '''re_head = a
         re_tail = b
         im_head = c
-        im_tail = d
+        im_tail = d'''
 
         if mode == 'head-batch':
             re_score = re_relation * re_tail + im_relation * im_tail
@@ -259,6 +274,9 @@ class KGEModel(nn.Module):
             im_score = re_head * im_relation + im_head * re_relation
             re_score = re_score - re_tail
             im_score = im_score - im_tail
+
+        print(re_score.size())
+        print(im_score.size())
 
         score = torch.stack([re_score, im_score], dim=0)
         score = score.norm(dim=0)

@@ -265,7 +265,7 @@ def main(args):
 
     # All true triples
     all_true_triples = train_triples + valid_triples + test_triples
-    print(all_true_triples)
+    #print(all_true_triples)
 
     kge_model = KGEModel(
         model_name=args.model,
